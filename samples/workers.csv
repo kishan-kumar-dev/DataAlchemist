@@ -1,0 +1,4 @@
+WorkerID,WorkerName,Skills,AvailableSlots,MaxLoadPerPhase,WorkerGroup,QualificationLevel
+W1,Ada,"analysis","[1,2,3]",2,Sales,3
+W2,Bob,"ops","[2,3]",1,Ops,2
+W3,Cara,"analysis","[1,3]",1,Sales,2

@@ -1,0 +1,4 @@
+ClientID,ClientName,PriorityLevel,RequestedTaskIDs,GroupTag,AttributesJSON
+C1,Acme Corp,5,"T1,T2",Enterprise,"{\"region\":\"APAC\"}"
+C2,Beta LLC,3,"T3","", "{\"vip\":true}"
+C3,Mini Co,2,"T4",SMB,"{\"notes\":\"fragile\"}"
