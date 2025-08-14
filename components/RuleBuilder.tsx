@@ -6,26 +6,36 @@ import { useState } from "react";
 import { useStore } from "@/lib/store";
 import { naturalToRule } from "@/lib/ai/aiNaturalRules";
 
-export default function RuleBuilder() {
-  const { rules, addRule, removeRule } = useStore();
-  const [text, setText] = useState("");
-  const [type, setType] = useState<
+type Rule = {
+  type:
     | "coRun"
     | "slotRestriction"
     | "loadLimit"
     | "phaseWindow"
     | "patternMatch"
-    | "precedenceOverride"
-  >("coRun");
-  const [payload, setPayload] = useState<any>("");
+    | "precedenceOverride";
+  [key: string]: any;
+};
+
+export default function RuleBuilder() {
+  const { rules, addRule, removeRule } = useStore() as {
+    rules: Rule[];
+    addRule: (rule: Rule) => void;
+    removeRule: (index: number) => void;
+  };
+
+  const [text, setText] = useState("");
+  const [type, setType] = useState<Rule["type"]>("coRun");
+  const [payload, setPayload] = useState<string>("");
 
   return (
     <div className="space-y-3">
+      {/* Select and JSON payload input */}
       <div className="flex gap-2 flex-wrap">
         <select
           className="px-3 py-2 rounded-xl border"
           value={type}
-          onChange={(e) => setType(e.target.value as any)}
+          onChange={(e) => setType(e.target.value as Rule["type"])}
         >
           <option value="coRun">Co-run</option>
           <option value="slotRestriction">Slot-restriction</option>
@@ -42,7 +52,8 @@ export default function RuleBuilder() {
         <Button
           onClick={() => {
             try {
-              addRule({ type, ...(payload ? JSON.parse(payload) : {}) });
+              const parsed = payload ? JSON.parse(payload) : {};
+              addRule({ type, ...parsed });
             } catch {
               console.error("Invalid JSON payload");
             }
@@ -52,6 +63,7 @@ export default function RuleBuilder() {
         </Button>
       </div>
 
+      {/* Natural language rule input */}
       <div className="flex gap-2">
         <Input
           placeholder="Type a rule in plain English…"
@@ -61,15 +73,16 @@ export default function RuleBuilder() {
         <Button
           onClick={() => {
             const r = naturalToRule(text);
-            if (r) addRule(r);
+            if (r) addRule(r as Rule);
           }}
         >
           Convert & Add
         </Button>
       </div>
 
+      {/* Rules list */}
       <div className="border rounded-xl p-2 text-sm max-h-60 overflow-auto">
-        {rules.map((r, i) => (
+        {rules.map((r: Rule, i: number) => (
           <div key={i} className="flex items-center gap-2">
             <code className="bg-black/5 px-2 py-1 rounded">
               {JSON.stringify(r)}

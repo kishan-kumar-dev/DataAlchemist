@@ -5,7 +5,6 @@ import * as XLSX from "xlsx";
 import { useStore } from "@/lib/store";
 import { aiHeaderMapper } from "@/lib/ai/aiHeaderMapper";
 import { parseAndNormalize } from "@/lib/parse";
-import { runValidations } from "@/lib/validate";
 
 export default function FileUploader() {
   const { setData, setValidations } = useStore();
@@ -22,7 +21,7 @@ export default function FileUploader() {
           const mapped = aiHeaderMapper(kind, rows);
           const normalized = parseAndNormalize(kind, mapped.rows);
           setData(kind, normalized);
-          setValidations(runValidations);
+          setValidations(); // ✅ no args
         },
       });
     };
@@ -35,7 +34,7 @@ export default function FileUploader() {
       const mapped = aiHeaderMapper(kind, json);
       const normalized = parseAndNormalize(kind, mapped.rows);
       setData(kind, normalized);
-      setValidations(runValidations);
+      setValidations(); // ✅ no args
     };
     reader.readAsBinaryString(file);
   }

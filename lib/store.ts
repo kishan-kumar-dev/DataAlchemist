@@ -3,12 +3,70 @@ import { runValidations } from "./validate";
 
 export type Rule = { type: string; [k: string]: any };
 
-export const useStore = create<any>((set, get) => ({
+export interface ValidationError {
+  kind: string;
+  rowId: string;
+  field: string;
+  message: string;
+}
+
+export interface Validation {
+  errors: ValidationError[];
+  warnings: ValidationError[];
+}
+
+export interface StoreState {
+  clients: any[];
+  workers: any[];
+  tasks: any[];
+  filteredCounts: { clients: number; workers: number; tasks: number };
+  rules: Rule[];
+  priorities: {
+    priorityLevel: number;
+    fairness: number;
+    cost: number;
+    speed: number;
+    requestedFulfillment: number;
+  };
+  validations: Validation;
+
+  setData: (
+    kind?: "clients" | "workers" | "tasks",
+    rows?: any[],
+    _unused?: any,
+    modifier?: (d: { clients: any[]; workers: any[]; tasks: any[] }) => {
+      clients: any[];
+      workers: any[];
+      tasks: any[];
+    }
+  ) => void;
+
+  updateCell: (
+    kind: "clients" | "workers" | "tasks",
+    id: string,
+    field: string,
+    value: any
+  ) => void;
+
+  setValidations: () => void;
+
+  setFilters: (
+    fn: () => { clients: any[]; workers: any[]; tasks: any[] }
+  ) => void;
+
+  addRule: (rule: Rule) => void;
+  removeRule: (idx: number) => void;
+
+  setPriorities: (p: Partial<StoreState["priorities"]>) => void;
+  applyPreset: (k: "fulfillment" | "fairness" | "minWorkload") => void;
+}
+
+export const useStore = create<StoreState>((set, get) => ({
   clients: [],
   workers: [],
   tasks: [],
   filteredCounts: { clients: 0, workers: 0, tasks: 0 },
-  rules: [] as Rule[],
+  rules: [],
   priorities: {
     priorityLevel: 7,
     fairness: 5,
@@ -18,13 +76,8 @@ export const useStore = create<any>((set, get) => ({
   },
   validations: { errors: [], warnings: [] },
 
-  setData: (
-    kind?: "clients" | "workers" | "tasks",
-    rows?: any[],
-    _unused?: any,
-    modifier?: (d: any) => any
-  ) =>
-    set((state: any) => {
+  setData: (kind, rows, _unused, modifier) =>
+    set((state) => {
       let { clients, workers, tasks } = state;
       if (kind && rows) {
         if (kind === "clients") clients = rows;
@@ -55,13 +108,8 @@ export const useStore = create<any>((set, get) => ({
       };
     }),
 
-  updateCell: (
-    kind: "clients" | "workers" | "tasks",
-    id: string,
-    field: string,
-    value: any
-  ) =>
-    set((state: any) => {
+  updateCell: (kind, id, field, value) =>
+    set((state) => {
       const copy = {
         clients: [...state.clients],
         workers: [...state.workers],
@@ -78,8 +126,8 @@ export const useStore = create<any>((set, get) => ({
 
   setValidations: () => set({ validations: runValidations() }),
 
-  setFilters: (fn: () => { clients: any[]; workers: any[]; tasks: any[] }) =>
-    set((state: any) => {
+  setFilters: (fn) =>
+    set((state) => {
       const data = fn();
       return {
         ...state,
@@ -92,16 +140,16 @@ export const useStore = create<any>((set, get) => ({
       };
     }),
 
-  addRule: (rule: Rule) => set((s: any) => ({ rules: [...s.rules, rule] })),
-  removeRule: (idx: number) =>
-    set((s: any) => ({
-      rules: s.rules.filter((_: any, i: number) => i !== idx),
+  addRule: (rule) => set((s) => ({ rules: [...s.rules, rule] })),
+  removeRule: (idx) =>
+    set((s) => ({
+      rules: s.rules.filter((_, i) => i !== idx),
     })),
 
-  setPriorities: (p: Partial<any>) =>
-    set((s: any) => ({ priorities: { ...s.priorities, ...p } })),
-  applyPreset: (k: "fulfillment" | "fairness" | "minWorkload") =>
-    set((s: any) => ({
+  setPriorities: (p) => set((s) => ({ priorities: { ...s.priorities, ...p } })),
+
+  applyPreset: (k) =>
+    set((s) => ({
       priorities:
         k === "fulfillment"
           ? {

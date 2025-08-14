@@ -31,13 +31,19 @@ export default function DataGridEditable({
           row.original?.ClientID ||
           row.original?.WorkerID ||
           row.original?.TaskID;
+
+        // Explicit type for 'e'
         const err = validations.errors.find(
-          (e) => e.kind === kind && e.rowId === id && e.field === key
+          (e: { kind: string; rowId: string | number; field: string }) =>
+            e.kind === kind && e.rowId === id && e.field === key
         );
+
         return (
           <Input
             defaultValue={String(value ?? "")}
-            onBlur={(e) => updateCell(kind, id, key, e.target.value)}
+            onBlur={(e: React.FocusEvent<HTMLInputElement>) =>
+              updateCell(kind, id, key, e.target.value)
+            }
             className={err ? "border-red-500" : ""}
           />
         );

@@ -22,12 +22,18 @@ export default function NaturalLanguageBar() {
       <Button onClick={() => setFilters(applyNaturalFilter(q))}>Filter</Button>
       <Button
         onClick={() =>
-          setData(
-            undefined as any,
-            undefined as any,
-            undefined as any,
-            applyNaturalModification(q)
-          )
+          setData(undefined, undefined, undefined, (data) => {
+            const modifierFn = applyNaturalModification(q);
+            if (!modifierFn) {
+              return data; // No changes if no modifier function
+            }
+            const modified = modifierFn(data);
+            return {
+              clients: data.clients,
+              workers: data.workers,
+              tasks: modified.tasks,
+            };
+          })
         }
       >
         Apply Change

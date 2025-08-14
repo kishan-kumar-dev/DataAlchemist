@@ -3,8 +3,16 @@ import { useStore } from "@/lib/store";
 
 export default function PrioritiesPanel() {
   const { priorities, setPriorities, applyPreset } = useStore();
-  const on = (k: keyof typeof priorities) => (e: any) =>
-    setPriorities({ [k]: Number(e.target.value) } as any);
+
+  // Explicit typing: priorities is Record<string, number>
+  const on =
+    (k: keyof typeof priorities) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPriorities({ [k]: Number(e.target.value) } as Partial<
+        typeof priorities
+      >);
+    };
+
   return (
     <div className="space-y-3">
       <div className="flex gap-2 flex-wrap">
@@ -27,6 +35,7 @@ export default function PrioritiesPanel() {
           Minimize Workload
         </button>
       </div>
+
       {Object.entries(priorities).map(([k, v]) => (
         <div key={k} className="grid grid-cols-5 items-center gap-2">
           <label className="col-span-2 capitalize">{k}</label>
@@ -35,10 +44,11 @@ export default function PrioritiesPanel() {
             min={0}
             max={10}
             value={v as number}
-            onChange={on(k as any)}
+            onChange={on(k as keyof typeof priorities)}
             className="col-span-2"
           />
-          <span className="text-sm">{v}</span>
+          {/* Ensure v is always rendered as string/number */}
+          <span className="text-sm">{String(v)}</span>
         </div>
       ))}
     </div>
